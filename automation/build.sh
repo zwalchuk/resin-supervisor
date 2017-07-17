@@ -107,6 +107,10 @@ export MIXPANEL_TOKEN
 # This is the step that actually builds the supervisor
 make IMAGE=$TARGET_IMAGE supervisor
 
+if [ "$STORE_YOCTO_CACHE" = "true" ]; then
+	make IMAGE=$BASE_IMAGE yocto-cache
+fi
+
 if [ "$PUSH_IMAGES" = "true" ]; then
 	make IMAGE=$TARGET_IMAGE deploy
 	docker tag $TARGET_IMAGE registry.resinstaging.io/$TARGET_IMAGE

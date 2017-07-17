@@ -21,6 +21,10 @@ defaults: &defaults
         name: Build and start the docker-in-docker builder
         command: |
             docker build --rm=false --tag builder -f automation/Dockerfile .
+    - restore_cache:
+        keys:
+          - yocto-cache-{{ .Environment.ARCH }}-{{ .Branch }}
+          - yocto-cache-{{ .Environment.ARCH }}
     - run:
         name: Start the docker-in-docker builder and build $ARCH-supervisor
         no_output_timeout: 10800
@@ -45,6 +49,14 @@ defaults: &defaults
               echo "Deploying to Resin API (production)"
               docker exec -it -e ARCH=${ARCH} -e TAG=$VERSION_TAG -e API_KEY=$PRODUCTION_API_KEY -e API_ENDPOINT=$PRODUCTION_API_ENDPOINT ${dind} node automation/deploy-to-resin.js
             fi
+    - save-cache:
+        key: yocto-cache-{{ .Environment.ARCH }}-{{ .Branch }}
+        paths:
+          - base-image/yocto-cache
+    - save-cache:
+        key: yocto-cache-{{ .Environment.ARCH }}
+        paths:
+          - base-image/yocto-cache
 
 version: 2
 jobs:
@@ -55,6 +67,7 @@ jobs:
       DOCKER_EMAIL: accounts+travisci+docker@resin.io
       ARCH: amd64
       PUSH_IMAGES: "true"
+      STORE_YOCTO_CACHE: "true"
       STAGING_API_ENDPOINT: https://api.resinstaging.io
       PRODUCTION_API_ENDPOINT: https://api.resin.io
   i386:
@@ -64,6 +77,7 @@ jobs:
       DOCKER_EMAIL: accounts+travisci+docker@resin.io
       ARCH: i386
       PUSH_IMAGES: "true"
+      STORE_YOCTO_CACHE: "true"
       STAGING_API_ENDPOINT: https://api.resinstaging.io
       PRODUCTION_API_ENDPOINT: https://api.resin.io
   armel:
@@ -73,6 +87,7 @@ jobs:
       DOCKER_EMAIL: accounts+travisci+docker@resin.io
       ARCH: armel
       PUSH_IMAGES: "true"
+      STORE_YOCTO_CACHE: "true"
       STAGING_API_ENDPOINT: https://api.resinstaging.io
       PRODUCTION_API_ENDPOINT: https://api.resin.io
   armv7hf:
@@ -82,6 +97,7 @@ jobs:
       DOCKER_EMAIL: accounts+travisci+docker@resin.io
       ARCH: armv7hf
       PUSH_IMAGES: "true"
+      STORE_YOCTO_CACHE: "true"
       STAGING_API_ENDPOINT: https://api.resinstaging.io
       PRODUCTION_API_ENDPOINT: https://api.resin.io
   aarch64:
@@ -91,6 +107,7 @@ jobs:
       DOCKER_EMAIL: accounts+travisci+docker@resin.io
       ARCH: aarch64
       PUSH_IMAGES: "true"
+      STORE_YOCTO_CACHE: "true"
       STAGING_API_ENDPOINT: https://api.resinstaging.io
       PRODUCTION_API_ENDPOINT: https://api.resin.io
   rpi:
@@ -100,6 +117,7 @@ jobs:
       DOCKER_EMAIL: accounts+travisci+docker@resin.io
       ARCH: rpi
       PUSH_IMAGES: "true"
+      STORE_YOCTO_CACHE: "true"
       STAGING_API_ENDPOINT: https://api.resinstaging.io
       PRODUCTION_API_ENDPOINT: https://api.resin.io
 

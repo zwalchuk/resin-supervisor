@@ -15,6 +15,8 @@ base-image/build/downloads
 base-image/build/sstate-cache
 base-image/build/tmp-glibc
 
+base-image/yocto-cache
+
 Dockerfile.build.*
 Dockerfile.runtime.*
 !Dockerfile.build.template

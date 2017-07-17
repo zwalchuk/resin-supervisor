@@ -27,8 +27,7 @@ esac
 
 export SOURCE_DIR=/source
 export DEST_DIR=/dest
-export SHARED_DOWNLOADS=/yocto/shared-downloads
-export SHARED_SSTATE=/yocto/shared-sstate
+
 # Make sure shared directories are in place
 mkdir -p $SHARED_DOWNLOADS
 mkdir -p $SHARED_SSTATE

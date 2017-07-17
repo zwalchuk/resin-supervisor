@@ -16,6 +16,7 @@ RUN apt-get -qq update \
 		libsdl1.2-dev \
 		locales \
 		python3 \
+		rsync \
 		texinfo \
 		unzip \
 		wget \
@@ -29,8 +30,9 @@ ENV LC_ALL en_US.UTF-8
 
 ENV SOURCE_DIR /source
 ENV DEST_DIR /dest
-ENV SHARED_DOWNLOADS /yocto/shared-downloads
-ENV SHARED_SSTATE /yocto/shared-sstate
+
+ENV SHARED_DOWNLOADS /source/yocto-cache/downloads
+ENV SHARED_SSTATE /source/yocto-cache/sstate
 
 ARG BUILDER_UID=1000
 ARG BUILDER_GID=1000

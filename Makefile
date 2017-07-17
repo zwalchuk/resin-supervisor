@@ -193,6 +193,12 @@ nodesuper:
 gosuper:
 	$(MAKE) -f $(THIS_FILE) TARGET_COMPONENT=gosuper IMAGE=$(IMAGE) ARCH=$(ARCH) supervisor-image
 
+yocto-cache: base
+	docker run \
+		--rm \
+		-v $(shell pwd)/base-image/yocto-cache:/cache $(IMAGE) \
+		rsync -a --delete /source/yocto-cache/sstate /source/yocto-cache/downloads /cache
+
 test-gosuper: gosuper
 	docker run \
 		--rm \
