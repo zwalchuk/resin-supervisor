@@ -141,8 +141,9 @@ RUN JOBS=MAX npm install --no-optional --unsafe-perm
 
 COPY webpack.config.js fix-jsonstream.js hardcode-migrations.js /usr/src/app/
 COPY src /usr/src/app/src
+COPY test /usr/src/app/test
 
-RUN npm run lint \
+RUN npm run test \
 	&& npm run build
 
 ##############################################################################
