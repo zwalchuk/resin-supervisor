@@ -15,7 +15,6 @@ updateLock = require './lib/update-lock'
 { singleToMulticontainerApp } = './lib/migration'
 
 DeviceConfig = require './device-config'
-Logger = require './logger'
 ApplicationManager = require './application-manager'
 
 validateLocalState = (state) ->
@@ -115,8 +114,7 @@ class DeviceStateRouter
 		@router.use(@applications.router)
 
 module.exports = class DeviceState extends EventEmitter
-	constructor: ({ @db, @config, @eventTracker }) ->
-		@logger = new Logger({ @eventTracker })
+	constructor: ({ @db, @config, @eventTracker, @logger }) ->
 		@deviceConfig = new DeviceConfig({ @db, @config, @logger })
 		@applications = new ApplicationManager({ @config, @logger, @db, @eventTracker, deviceState: this })
 		@on 'error', (err) ->
@@ -169,25 +167,20 @@ module.exports = class DeviceState extends EventEmitter
 			@config.set({ legacyAppsPresent: 'false' })
 
 	init: ->
+		@config.on 'change', (changedConfig) =>
+			if changedConfig.loggingEnabled?
+				@logger.enable(changedConfig.loggingEnabled)
+			if changedConfig.nativeLogger?
+				@logger.switchBackend(changedConfig.nativeLogger)
+			if changedConfig.apiSecret?
+				@reportCurrentState(api_secret: changedConfig.apiSecret)
+
 		@config.getMany([
-			'logsChannelSecret', 'pubnub', 'offlineMode', 'loggingEnabled', 'initialConfigSaved',
-			'listenPort', 'apiSecret', 'osVersion', 'osVariant', 'version', 'provisioned',
-			'resinApiEndpoint', 'connectivityCheckEnabled', 'legacyAppsPresent'
+			'initialConfigSaved', 'listenPort', 'apiSecret', 'osVersion', 'osVariant', 'logsChannelSecret',
+			'version', 'provisioned', 'resinApiEndpoint', 'connectivityCheckEnabled', 'legacyAppsPresent'
 		])
 		.then (conf) =>
-			@logger.init({
-				pubnub: conf.pubnub
-				channel: "device-#{conf.logsChannelSecret}-logs"
-				offlineMode: conf.offlineMode
-				enable: conf.loggingEnabled
-			})
-			.then =>
-				@config.on 'change', (changedConfig) =>
-					if changedConfig.loggingEnabled?
-						@logger.enable(changedConfig.loggingEnabled)
-					if changedConfig.apiSecret?
-						@reportCurrentState(api_secret: changedConfig.apiSecret)
-			.then =>
+			Promise.try =>
 				if validation.checkTruthy(conf.legacyAppsPresent)
 					@normaliseLegacy()
 			.then =>

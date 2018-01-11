@@ -146,7 +146,7 @@ class ProxyvisorRouter
 			.then ([ device ]) =>
 				return res.status(404).send('Device not found') if !device?
 				return res.status(410).send('Device deleted') if device.markedForDeletion
-				@logger.log(m, { channel: "device-#{device.logs_channel}-logs" })
+				@logger.logDependent(m, { uuid, channel: "device-#{device.logs_channel}-logs" })
 				res.status(202).send('OK')
 			.catch (err) ->
 				console.error("Error on #{req.method} #{url.parse(req.url).pathname}", err, err.stack)

@@ -32,6 +32,7 @@ class APIBinderRouter
 
 module.exports = class APIBinder
 	constructor: ({ @config, @db, @deviceState, @eventTracker }) ->
+		@_readyForLogs = true
 		@resinApi = null
 		@cachedResinApi = null
 		@lastReportedState = { local: {}, dependent: {} }
@@ -60,11 +61,11 @@ module.exports = class APIBinder
 		@_writeLock('getTarget').disposer (release) ->
 			release()
 
-	init: (startServices = true) ->
-		@config.getMany([ 'offlineMode', 'resinApiEndpoint', 'bootstrapRetryDelay' ])
-		.then ({ offlineMode, resinApiEndpoint, bootstrapRetryDelay }) =>
+	initClient: =>
+		@config.getMany([ 'offlineMode', 'resinApiEndpoint' ])
+		.then ({ offlineMode, resinApiEndpoint }) =>
 			if offlineMode
-				console.log('Offline Mode is set, skipping API binder initialization')
+				console.log('Offline Mode is set, skipping API client initialization')
 				return
 			baseUrl = url.resolve(resinApiEndpoint, '/v4/')
 			@resinApi = new PlatformAPI
@@ -75,7 +76,12 @@ module.exports = class APIBinder
 				apiPrefix: baseUrlLegacy
 				passthrough: requestOpts
 			@cachedResinApi = @resinApi.clone({}, cache: {})
-			if !startServices
+
+	start: =>
+		@config.getMany([ 'offlineMode', 'bootstrapRetryDelay' ])
+		.then ({ offlineMode, bootstrapRetryDelay }) =>
+			if offlineMode
+				console.log('Offline Mode is set, skipping API binder initialization')
 				return
 			console.log('Ensuring device is provisioned')
 			@provisionDevice()
@@ -245,6 +251,34 @@ module.exports = class APIBinder
 				customOptions:
 					apikey: conf.currentApiKey
 			.timeout(conf.apiTimeout)
+
+	_sendLogsRequest: (uuid, data) =>
+		reqBody = _.map data, (msg) ->
+			return _.mapKeys(msg, (v, k) -> _.snakeCase(k))
+		@config.getMany([ 'resinApiEndpoint', 'currentApiKey' ])
+		.then (conf) =>
+			endpoint = url.resolve(conf.resinApiEndpoint, "/device/v2/#{uuid}/logs")
+			requestParams = _.extend
+				method: 'POST'
+				url: "#{endpoint}?&apikey=#{conf.currentApiKey}"
+				body: reqBody
+			, @cachedResinApi.passthrough
+
+			@cachedResinApi._request(requestParams)
+
+	readyForLogs: =>
+		return @_readyForLogs
+
+	logDependent: (uuid, msg) =>
+		@_sendLogsRequest(uuid, [ msg ])
+
+	logBatch: (messages) =>
+		@_readyForLogs = false
+		@config.get('uuid')
+		.then (uuid) =>
+			@_sendLogsRequest(uuid, messages)
+		.tap =>
+			@_readyForLogs = true
 
 	# Creates the necessary config vars in the API to match the current device state,
 	# without overwriting any variables that are already set.

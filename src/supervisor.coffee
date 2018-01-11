@@ -6,6 +6,7 @@ Config = require './config'
 APIBinder = require './api-binder'
 DeviceState = require './device-state'
 SupervisorAPI = require './supervisor-api'
+Logger = require './logger'
 
 startupConfigFields = [
 	'uuid'
@@ -15,6 +16,10 @@ startupConfigFields = [
 	'offlineMode'
 	'mixpanelToken'
 	'mixpanelHost'
+	'logsChannelSecret'
+	'pubnub'
+	'loggingEnabled'
+	'nativeLogger'
 ]
 
 module.exports = class Supervisor extends EventEmitter
@@ -22,7 +27,8 @@ module.exports = class Supervisor extends EventEmitter
 		@db = new DB()
 		@config = new Config({ @db })
 		@eventTracker = new EventTracker()
-		@deviceState = new DeviceState({ @config, @db, @eventTracker })
+		@logger = new Logger({ @eventTracker })
+		@deviceState = new DeviceState({ @config, @db, @eventTracker, @logger })
 		@apiBinder = new APIBinder({ @config, @db, @deviceState, @eventTracker })
 
 		# FIXME: rearchitect proxyvisor to avoid this circular dependency
@@ -40,6 +46,18 @@ module.exports = class Supervisor extends EventEmitter
 			@eventTracker.init(conf)
 			.then =>
 				@eventTracker.track('Supervisor start')
+			.then =>
+				@apiBinder.initClient()
+			.then =>
+				@logger.init({
+					nativeLogger: conf.nativeLogger
+					apiBinder: @apiBinder
+					pubnub: conf.pubnub
+					channel: "device-#{conf.logsChannelSecret}-logs"
+					offlineMode: conf.offlineMode
+					enable: conf.loggingEnabled
+				})
+			.then =>
 				@deviceState.init()
 			.then =>
 				# initialize API
@@ -47,4 +65,4 @@ module.exports = class Supervisor extends EventEmitter
 				@api.listen(@config.constants.allowedInterfaces, conf.listenPort, conf.apiTimeout)
 				@deviceState.on('shutdown', => @api.stop())
 			.then =>
-				@apiBinder.init() # this will first try to provision if it's a new device
+				@apiBinder.start() # this will first try to provision if it's a new device
