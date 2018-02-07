@@ -525,7 +525,7 @@ module.exports = class ApplicationManager extends EventEmitter
 		# Returns true if a service matches its target except it should be running and it is not, but we've
 		# already started it before. In this case it means it just exited so we don't want to start it again.
 		alreadyStarted = (serviceId) =>
-			currentServicesPerId[serviceId].EqualExceptForRunningState(targetServicesPerId[serviceId]) and
+			currentServicesPerId[serviceId].isEqualExceptForRunningState(targetServicesPerId[serviceId]) and
 				targetServicesPerId[serviceId].running  and
 				@_containerStarted[currentServicesPerId[serviceId].containerId]
 
