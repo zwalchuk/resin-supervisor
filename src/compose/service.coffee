@@ -217,7 +217,7 @@ module.exports = class Service
 			if @networkMode not in [ 'host', 'bridge', 'none' ]
 				@networkMode = "#{@appId}_#{@networkMode}"
 
-			@networks = _.mapKeys @networks, (v, k) ->
+			@networks = _.mapKeys @networks, (v, k) =>
 				if k not in [ 'host', 'bridge', 'none' ]
 					return "#{@appId}_#{k}"
 				else
