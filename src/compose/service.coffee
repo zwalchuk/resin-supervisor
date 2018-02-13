@@ -174,6 +174,7 @@ module.exports = class Service
 			@storageOpt
 			@usernsMode
 			@ipc
+			@macAddress
 		} = _.mapKeys(serviceProperties, (v, k) -> _.camelCase(k))
 
 		@networks ?= {}
@@ -215,6 +216,7 @@ module.exports = class Service
 		@healthcheck ?= null
 		@init ?= null
 		@readOnly ?= false
+		@macAddress ?= null
 
 		@sysctls ?= {}
 
@@ -495,6 +497,7 @@ module.exports = class Service
 			storageOpt: container.HostConfig.StorageOpt
 			usernsMode: container.HostConfig.UsernsMode
 			ipc: container.HostConfig.IpcMode
+			macAddress: container.Config.MacAddress
 		}
 		# I've seen docker use either 'no' or '' for no restart policy, so we normalise to 'no'.
 		if service.restartPolicy.Name == ''
@@ -607,6 +610,8 @@ module.exports = class Service
 			conf.Hostname = @hostname
 		if !_.isEmpty(@storageOpt)
 			conf.HostConfig.StorageOpt = @storageOpt
+		if @macAddress?
+			conf.MacAddress = @macAddress
 		return conf
 
 	# TODO: when we support network configuration properly, return endpointConfig: conf
@@ -651,6 +656,7 @@ module.exports = class Service
 			'storageOpt'
 			'usernsMode'
 			'ipc'
+			'macAddress'
 		]
 		arraysToCompare = [
 			'volumes'
