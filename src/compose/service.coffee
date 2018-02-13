@@ -245,6 +245,9 @@ module.exports = class Service
 			if @dnsSearch?
 				if !Array.isArray(@dnsSearch)
 					@dnsSearch = [ @dns ]
+			if @tmpfs?
+				if !Array.isArray(@tmpfs)
+					@tmpfs = [ @tmpfs ]
 
 			@nanoCpus = Math.round(Number(@cpus) * 10 ** 9)
 
