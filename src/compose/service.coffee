@@ -172,6 +172,7 @@ module.exports = class Service
 			@pidsLimit
 			@securityOpt
 			@storageOpt
+			@usernsMode
 		} = _.mapKeys(serviceProperties, (v, k) -> _.camelCase(k))
 
 		@networks ?= {}
@@ -222,6 +223,7 @@ module.exports = class Service
 		@pidsLimit ?= 0
 		@securityOpt ?= []
 		@storageOpt ?= {}
+		@usernsMode ?= ''
 
 		# If the service has no containerId, it is a target service and has to be normalised and extended
 		if !@containerId?
@@ -487,6 +489,7 @@ module.exports = class Service
 			pidsLimit: container.HostConfig.PidsLimit
 			securityOpt: container.HostConfig.SecurityOpt
 			storageOpt: container.HostConfig.StorageOpt
+			usernsMode: container.HostConfig.UsernsMode
 		}
 		# I've seen docker use either 'no' or '' for no restart policy, so we normalise to 'no'.
 		if service.restartPolicy.Name == ''
@@ -573,6 +576,7 @@ module.exports = class Service
 				PidMode: @pid
 				PidsLimit: @pidsLimit
 				SecurityOpt: @securityOpt
+				UsernsMode: @usernsMode
 		}
 		if @stopSignal?
 			conf.StopSignal = @stopSignal
@@ -639,6 +643,7 @@ module.exports = class Service
 			'pid'
 			'pidsLimit'
 			'storageOpt'
+			'usernsMode'
 		]
 		arraysToCompare = [
 			'volumes'
