@@ -167,6 +167,7 @@ module.exports = class Service
 			@sysctls
 			@hostname
 			@cgroupParent
+			@groupAdd
 		} = _.mapKeys(serviceProperties, (v, k) -> _.camelCase(k))
 
 		@networks ?= {}
@@ -201,6 +202,7 @@ module.exports = class Service
 		@dnsSearch ?= []
 		@dnsOpt ?= []
 		@ulimitsArray ?= []
+		@groupAdd ?= []
 
 		@stopSignal ?= null
 		@stopGracePeriod ?= null
@@ -472,6 +474,7 @@ module.exports = class Service
 			sysctls: container.HostConfig.Sysctls
 			hostname: hostname
 			cgroupParent: container.HostConfig.CgroupParent
+			groupAdd: container.HostConfig.GroupAdd
 		}
 		# I've seen docker use either 'no' or '' for no restart policy, so we normalise to 'no'.
 		if service.restartPolicy.Name == ''
@@ -554,6 +557,7 @@ module.exports = class Service
 				Sysctls: @sysctls
 				CgroupParent: @cgroupParent
 				ExtraHosts: @extraHosts
+				GroupAdd: @groupAdd
 		}
 		if @stopSignal?
 			conf.StopSignal = @stopSignal
@@ -627,6 +631,7 @@ module.exports = class Service
 			'tmpfs'
 			'extraHosts'
 			'ulimitsArray'
+			'groupAdd'
 		]
 		isEq = _.isEqual(_.pick(this, propertiesToCompare), _.pick(otherService, propertiesToCompare)) and
 			_.isEqual(_.omit(@environment, [ 'RESIN_DEVICE_NAME_AT_INIT' ]), _.omit(otherService.environment, [ 'RESIN_DEVICE_NAME_AT_INIT' ])) and
