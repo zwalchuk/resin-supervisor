@@ -151,6 +151,7 @@ module.exports = class Service
 			@cpuset
 			@nanoCpus
 			@domainname
+			@oomKillDisable
 			@oomScoreAdj
 			@dns
 			@dnsSearch
@@ -202,6 +203,7 @@ module.exports = class Service
 		@domainname ?= ''
 
 		@oomScoreAdj ?= 0
+		@oomKillDisable ?= false
 		@tmpfs ?= []
 		@extraHosts ?= []
 
@@ -281,6 +283,7 @@ module.exports = class Service
 				d = new Duration(@stopGracePeriod)
 				@stopGracePeriod = d.seconds()
 
+			@oomKillDisable = Boolean(@oomKillDisable)
 			@readOnly = Boolean(@readOnly)
 
 			if Array.isArray(@sysctls)
@@ -475,6 +478,7 @@ module.exports = class Service
 			nanoCpus: container.HostConfig.NanoCpus
 			cpuset: container.HostConfig.CpusetCpus
 			domainname: container.Config.Domainname
+			oomKillDisable: container.HostConfig.OomKillDisable
 			oomScoreAdj: container.HostConfig.OomScoreAdj
 			dns: container.HostConfig.Dns
 			dnsSearch: container.HostConfig.DnsSearch
@@ -571,6 +575,7 @@ module.exports = class Service
 				CpuQuota: @cpuQuota
 				CpusetCpus: @cpuset
 				OomScoreAdj: @oomScoreAdj
+				OomKillDisable: @oomKillDisable
 				Tmpfs: tmpfs
 				Dns: @dns
 				DnsSearch: @dnsSearch
@@ -643,6 +648,7 @@ module.exports = class Service
 			'cpuset'
 			'domainname'
 			'oomScoreAdj'
+			'oomKillDisable'
 			'healthcheck'
 			'stopSignal'
 			'stopGracePeriod'
