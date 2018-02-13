@@ -166,6 +166,7 @@ module.exports = class Service
 			@readOnly
 			@sysctls
 			@hostname
+			@cgroupParent
 		} = _.mapKeys(serviceProperties, (v, k) -> _.camelCase(k))
 
 		@networks ?= {}
@@ -210,6 +211,7 @@ module.exports = class Service
 		@sysctls ?= {}
 
 		@hostname ?= ''
+		@cgroupParent ?= ''
 
 		# If the service has no containerId, it is a target service and has to be normalised and extended
 		if !@containerId?
@@ -466,6 +468,7 @@ module.exports = class Service
 			readOnly: container.HostConfig.ReadonlyRootfs
 			sysctls: container.HostConfig.Sysctls
 			hostname: hostname
+			cgroupParent: container.HostConfig.CgroupParent
 		}
 		# I've seen docker use either 'no' or '' for no restart policy, so we normalise to 'no'.
 		if service.restartPolicy.Name == ''
@@ -546,6 +549,7 @@ module.exports = class Service
 				Ulimits: @ulimitsArray
 				ReadonlyRootfs: @readOnly
 				Sysctls: @sysctls
+				CgroupParent: @cgroupParent
 		}
 		if @stopSignal?
 			conf.StopSignal = @stopSignal
@@ -606,6 +610,7 @@ module.exports = class Service
 			'readOnly'
 			'sysctls'
 			'hostname'
+			'cgroupParent'
 		]
 		arraysToCompare = [
 			'volumes'
