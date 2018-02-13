@@ -176,6 +176,7 @@ module.exports = class Service
 			@usernsMode
 			@ipc
 			@macAddress
+			@user
 		} = _.mapKeys(serviceProperties, (v, k) -> _.camelCase(k))
 
 		@networks ?= {}
@@ -229,6 +230,7 @@ module.exports = class Service
 		@securityOpt ?= []
 		@storageOpt ?= {}
 		@usernsMode ?= ''
+		@user ?= ''
 
 		if _.isEmpty(@ipc)
 			@ipc = 'shareable'
@@ -502,6 +504,7 @@ module.exports = class Service
 			usernsMode: container.HostConfig.UsernsMode
 			ipc: container.HostConfig.IpcMode
 			macAddress: container.Config.MacAddress
+			user: container.Config.User
 		}
 		# I've seen docker use either 'no' or '' for no restart policy, so we normalise to 'no'.
 		if service.restartPolicy.Name == ''
@@ -559,6 +562,7 @@ module.exports = class Service
 			ExposedPorts: @exposedPorts
 			Labels: @labels
 			Domainname: @domainname
+			User: @user
 			HostConfig:
 				Memory: @memLimit
 				MemoryReservation: @memReservation
@@ -663,6 +667,7 @@ module.exports = class Service
 			'usernsMode'
 			'ipc'
 			'macAddress'
+			'user'
 		]
 		arraysToCompare = [
 			'volumes'
