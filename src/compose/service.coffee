@@ -334,6 +334,9 @@ module.exports = class Service
 			@volumes.push('/lib/modules:/lib/modules')
 		if checkTruthy(@labels['io.resin.features.firmware'])
 			@volumes.push('/lib/firmware:/lib/firmware')
+		if checkTruthy(@labels['io.resin.features.balena-socket'])
+			@volumes.push('/var/run/balena.sock:/var/run/balena.sock')
+			@environment['DOCKER_HOST'] ?= 'unix:///var/run/balena.sock'
 		if checkTruthy(@labels['io.resin.features.supervisor-api'])
 			@_addSupervisorApi(opts)
 		else
