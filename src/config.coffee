@@ -141,10 +141,10 @@ module.exports = class Config extends EventEmitter
 			loggingEnabled: { source: 'db', mutable: true, default: 'true' }
 			connectivityCheckEnabled: { source: 'db', mutable: true, default: 'true' }
 			delta: { source: 'db', mutable: true, default: 'false' }
-			deltaRequestTimeout: { source: 'db', mutable: true, default: '' }
+			deltaRequestTimeout: { source: 'db', mutable: true, default: '30000' }
 			deltaApplyTimeout: { source: 'db', mutable: true, default: '' }
-			deltaRetryCount: { source: 'db', mutable: true, default: '' }
-			deltaRetryInterval: { source: 'db', mutable: true, default: '' }
+			deltaRetryCount: { source: 'db', mutable: true, default: '30' }
+			deltaRetryInterval: { source: 'db', mutable: true, default: '10000' }
 			lockOverride: { source: 'db', mutable: true, default: 'false' }
 			legacyAppsPresent: { source: 'db', mutable: true, default: 'false' }
 		}
