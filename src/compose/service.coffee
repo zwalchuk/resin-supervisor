@@ -171,6 +171,7 @@ module.exports = class Service
 			@pid
 			@pidsLimit
 			@securityOpt
+			@storageOpt
 		} = _.mapKeys(serviceProperties, (v, k) -> _.camelCase(k))
 
 		@networks ?= {}
@@ -220,6 +221,7 @@ module.exports = class Service
 		@pid ?= ''
 		@pidsLimit ?= 0
 		@securityOpt ?= []
+		@storageOpt ?= {}
 
 		# If the service has no containerId, it is a target service and has to be normalised and extended
 		if !@containerId?
@@ -484,6 +486,7 @@ module.exports = class Service
 			pid: container.HostConfig.PidMode
 			pidsLimit: container.HostConfig.PidsLimit
 			securityOpt: container.HostConfig.SecurityOpt
+			storageOpt: container.HostConfig.StorageOpt
 		}
 		# I've seen docker use either 'no' or '' for no restart policy, so we normalise to 'no'.
 		if service.restartPolicy.Name == ''
@@ -592,6 +595,8 @@ module.exports = class Service
 			conf.HostConfig.Init = true
 		if !_.isEmpty(@hostname)
 			conf.Hostname = @hostname
+		if !_.isEmpty(@storageOpt)
+			conf.HostConfig.StorageOpt = @storageOpt
 		return conf
 
 	# TODO: when we support network configuration properly, return endpointConfig: conf
@@ -633,6 +638,7 @@ module.exports = class Service
 			'cgroupParent'
 			'pid'
 			'pidsLimit'
+			'storageOpt'
 		]
 		arraysToCompare = [
 			'volumes'
