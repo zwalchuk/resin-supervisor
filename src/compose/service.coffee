@@ -58,6 +58,22 @@ getStopSignal = (service, imageInfo) ->
 		sig = sig.toString()
 	return sig
 
+getUser = (service, imageInfo) ->
+	user = ''
+	if service.user?
+		user = service.user
+	else if imageInfo?.Config?.User?
+		user = imageInfo.Config.User
+	return user
+
+getWorkingDir = (service, imageInfo) ->
+	workingDir = ''
+	if service.workingDir?
+		workingDir = service.workingDir
+	else if imageInfo?.Config?.WorkingDir?
+		workingDir = imageInfo.Config.WorkingDir
+	return workingDir
+
 buildHealthcheckTest = (test) ->
 	if _.isString(test)
 		return [ 'CMD-SHELL', test ]
@@ -177,6 +193,7 @@ module.exports = class Service
 			@ipc
 			@macAddress
 			@user
+			@workingDir
 		} = _.mapKeys(serviceProperties, (v, k) -> _.camelCase(k))
 
 		@networks ?= {}
@@ -231,6 +248,7 @@ module.exports = class Service
 		@storageOpt ?= {}
 		@usernsMode ?= ''
 		@user ?= ''
+		@workingDir ?= ''
 
 		if _.isEmpty(@ipc)
 			@ipc = 'shareable'
@@ -254,6 +272,8 @@ module.exports = class Service
 			@entrypoint = getEntrypoint(serviceProperties, opts.imageInfo)
 			@stopSignal = getStopSignal(serviceProperties, opts.imageInfo)
 			@healthcheck = getHealthcheck(serviceProperties, opts.imageInfo)
+			@workingDir = getWorkingDir(serviceProperties, opts.imageInfo)
+			@user = getUser(serviceProperties, opts.imageInfo)
 			@extendEnvVars(opts)
 			@extendLabels(opts.imageInfo)
 			@extendAndSanitiseVolumes(opts.imageInfo)
