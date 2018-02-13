@@ -553,6 +553,7 @@ module.exports = class Service
 				ReadonlyRootfs: @readOnly
 				Sysctls: @sysctls
 				CgroupParent: @cgroupParent
+				ExtraHosts: @extraHosts
 		}
 		if @stopSignal?
 			conf.StopSignal = @stopSignal
