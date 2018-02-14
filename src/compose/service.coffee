@@ -330,9 +330,9 @@ module.exports = class Service
 	addFeaturesFromLabels: (opts) =>
 		if checkTruthy(@labels['io.resin.features.dbus'])
 			@volumes.push('/run/dbus:/host/run/dbus')
-		if checkTruthy(@labels['io.resin.features.kernel-modules'])
+		if checkTruthy(@labels['io.resin.features.kernel-modules']) and opts.hostPathExists.modules
 			@volumes.push('/lib/modules:/lib/modules')
-		if checkTruthy(@labels['io.resin.features.firmware'])
+		if checkTruthy(@labels['io.resin.features.firmware']) and opts.hostPathExists.firmware
 			@volumes.push('/lib/firmware:/lib/firmware')
 		if checkTruthy(@labels['io.resin.features.balena-socket'])
 			@volumes.push('/var/run/balena.sock:/var/run/balena.sock')

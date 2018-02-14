@@ -3,6 +3,8 @@ _ = require 'lodash'
 EventEmitter = require 'events'
 express = require 'express'
 bodyParser = require 'body-parser'
+fs = Promise.promisifyAll(require('fs'))
+path = require 'path'
 
 constants = require './lib/constants'
 
@@ -44,6 +46,12 @@ fetchAction = (service) ->
 		image: imageForService(service)
 		serviceId: service.serviceId
 	}
+
+pathExistsOnHost = (p) ->
+	fs.statAsync(path.join(constants.rootMountPoint, p))
+	.return(true)
+	.catchReturn(false)
+
 # TODO: implement additional v2 endpoints
 # v1 endpoins only work for single-container apps as they assume the app has a single service.
 class ApplicationManagerRouter
@@ -828,10 +836,15 @@ module.exports = class ApplicationManager extends EventEmitter
 			@config.get('extendedEnvOptions')
 			@docker.getNetworkGateway(constants.supervisorNetworkInterface)
 			.catchReturn('127.0.0.1')
-			(opts, supervisorApiHost) =>
+			Promise.props({
+				firmware: pathExistsOnHost('/lib/firmware')
+				modules: pathExistsOnHost('/lib/modules')
+			})
+			(opts, supervisorApiHost, hostPathExists) =>
 				configOpts = {
 					appName: app.name
 					supervisorApiHost
+					hostPathExists
 				}
 				_.assign(configOpts, opts)
 				volumes = JSON.parse(app.volumes)
